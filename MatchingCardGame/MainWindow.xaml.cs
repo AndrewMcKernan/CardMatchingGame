@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using System.Drawing;
 using System.Windows.Media.Imaging;
 using System.Drawing.Imaging;
@@ -13,7 +12,6 @@ using System.Resources;
 using MatchingCardGame.Properties;
 using System.Globalization;
 using System.Collections;
-using System.Windows.Interop;
 
 namespace MatchingCardGame
 {
@@ -27,11 +25,11 @@ namespace MatchingCardGame
         private int score = 0;
         private int mistakes = 0;
         private Random random = new Random();
-        BitmapImage cardBackImageSource;
-        System.Windows.Controls.Image firstSelection = null;
-        
+        private BitmapImage cardBackImageSource;
+        private System.Windows.Controls.Image firstSelection = null;
         private Dictionary<int, Tuple<System.Windows.Controls.Image, BitmapImage>> imageMapping = new Dictionary<int, Tuple<System.Windows.Controls.Image, BitmapImage>>();
         private List<BitmapImage> solvedPairs = new List<BitmapImage>();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -39,6 +37,7 @@ namespace MatchingCardGame
             GamePanel.Visibility = Visibility.Collapsed;
         }
 
+        // update counter of user mistakes
         private void updateNumberOfMistakes()
         {
             MistakesText.Visibility = Visibility.Visible;
@@ -47,9 +46,11 @@ namespace MatchingCardGame
 
         #region Initialization
 
+        // validate user entry and populate the game grid with cards
         private void startGame()
         {
             string entry = numberOfPairsBox.Text.ToString();
+            // if text is valid, get needed info and start the game. Otherwise, do not start the game.
             if (isTextAllowed(entry))
             {
                 errorMessage.Visibility = Visibility.Collapsed;
@@ -58,38 +59,23 @@ namespace MatchingCardGame
             else
             {
                 errorMessage.Visibility = Visibility.Visible;
+                return;
             }
 
             StarterPanel.Visibility = Visibility.Collapsed;
             GamePanel.Visibility = Visibility.Visible;
 
             updateNumberOfMistakes();
-
-            // the following call puts us in bin/Debug or bin/Release depending on configuration. We need to go back to the directory of where the card
-            // images are stored.
-            string binPath = Environment.CurrentDirectory;
-            var pathList = binPath.Split('\\').ToList();
             
-            pathList.RemoveAt(pathList.Count - 1);
-            pathList.RemoveAt(pathList.Count - 1);
-
-            string path = "";
-            foreach (var item in pathList)
-            {
-                path += item + "\\";
-            }
-            path += "CardImages\\";
-
-            var files = new DirectoryInfo(path).GetFiles();
             ResourceManager myResources = new ResourceManager(typeof(Resources));
 
             ResourceSet resourceSet = myResources.GetResourceSet(CultureInfo.CurrentUICulture, true, true);
-            cardBackImageSource = convertBitmapToBitmapImage(MatchingCardGame.Properties.Resources.red_back);
+            cardBackImageSource = convertBitmapToBitmapImage(MatchingCardGame.Properties.Resources.red_back); // card back
             
             int index = 0;
             // we will populate this panel list with all of the cards that will be placed, and they will be randomized afterwards
             var panelList = new List<StackPanel>();
-            // using a foreach loop to easily access the images in the resourceSet
+            // using a foreach loop to easily access the images in the resourceSet. The specific images used don't matter.
             foreach (DictionaryEntry cardImage in resourceSet)
             {
                 // just in case, we don't want the back of a card to be entered as the card's front
@@ -122,6 +108,7 @@ namespace MatchingCardGame
             }
         }
 
+        // reset the game back to how it was when it started so that it can be played again.
         private void resetGame()
         {
             GameGrid.Children.Clear();
@@ -150,11 +137,14 @@ namespace MatchingCardGame
 
         #region Event Handlers
 
+        // reset the game
         private void RestartButton_Click(object sender, RoutedEventArgs e)
         {
             resetGame();
         }
 
+        // When a card is selected, either flip it over or ignore it depending on the state that 
+        // it's in. Check for matches as well.
         public void selectCardButton_Click(object sender, RoutedEventArgs e)
         {
             string name = (sender as Button).Name.ToString();
@@ -212,11 +202,13 @@ namespace MatchingCardGame
 
         }
 
+        // start the game with the start button
         private void startButton_Click(object sender, RoutedEventArgs e)
         {
             startGame();
         }
 
+        // start the game by pressing Enter in the textbox rather than just clicking the button
         private void numberOfPairsBox_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key != System.Windows.Input.Key.Enter) return;
@@ -229,6 +221,8 @@ namespace MatchingCardGame
         #region Data Processing Functions
 
         // Create one of the StackPanels making up the game board
+        // int index is used for mapping the image to it's proper location with mapImageToCard
+        // BitmapImage imageSource is being mapped to the given index for later retrieval, and displayed in the StackPanel
         private StackPanel createCardStackPanel(BitmapImage imageSource, int index)
         {
             StackPanel panel = new StackPanel();
@@ -259,12 +253,14 @@ namespace MatchingCardGame
             imageMapping[index] = new Tuple<System.Windows.Controls.Image, BitmapImage>(cardBackImage, imageSource);
         }
         
+        // parses numbers out of a string and returns them as an int
         private int parseNameToIndex(string name)
         {
             string stringIndex = new string(name.Where(c => char.IsDigit(c)).ToArray());
             return int.Parse(stringIndex);
         }
 
+        // converts a Bitmap to a BitmapImage
         private BitmapImage convertBitmapToBitmapImage(Bitmap bmp)
         {
             using (MemoryStream memory = new MemoryStream())
