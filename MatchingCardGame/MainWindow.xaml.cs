@@ -9,6 +9,11 @@ using System.Windows.Media;
 using System.Drawing;
 using System.Windows.Media.Imaging;
 using System.Drawing.Imaging;
+using System.Resources;
+using MatchingCardGame.Properties;
+using System.Globalization;
+using System.Collections;
+using System.Windows.Interop;
 
 namespace MatchingCardGame
 {
@@ -76,18 +81,19 @@ namespace MatchingCardGame
             path += "CardImages\\";
 
             var files = new DirectoryInfo(path).GetFiles();
+            ResourceManager myResources = new ResourceManager(typeof(Resources));
 
-            // generate the static image source that will be used for the back of the cards
-            cardBackImageSource = generateImageSource(files[files.Length - 1].FullName);
+            ResourceSet resourceSet = myResources.GetResourceSet(CultureInfo.CurrentUICulture, true, true);
+            cardBackImageSource = convertBitmapToBitmapImage(MatchingCardGame.Properties.Resources.red_back);
             
             int index = 0;
             // we will populate this panel list with all of the cards that will be placed, and they will be randomized afterwards
             var panelList = new List<StackPanel>();
-            // using a foreach loop to easily access the images in the files object
-            foreach (var cardImage in files)
+            // using a foreach loop to easily access the images in the resourceSet
+            foreach (DictionaryEntry cardImage in resourceSet)
             {
                 // just in case, we don't want the back of a card to be entered as the card's front
-                if (cardImage.FullName == "red_back.png")
+                if (cardImage.Key.ToString() == "red_back")
                 {
                     continue;
                 }
@@ -97,7 +103,7 @@ namespace MatchingCardGame
                     break;
                 }
                 
-                var imageSource = generateImageSource(cardImage.FullName);
+                var imageSource = convertBitmapToBitmapImage((Bitmap) cardImage.Value);
                 
                 panelList.Add(createCardStackPanel(imageSource, index));
 
@@ -259,19 +265,19 @@ namespace MatchingCardGame
             return int.Parse(stringIndex);
         }
 
-        private BitmapImage generateImageSource(string filename)
+        private BitmapImage convertBitmapToBitmapImage(Bitmap bmp)
         {
-            var imageFile = System.Drawing.Image.FromFile(filename);
-            BitmapImage bi = new BitmapImage();
-            bi.BeginInit();
-            MemoryStream ms = new MemoryStream();
-            imageFile.Save(ms, ImageFormat.Bmp);
-            ms.Seek(0, SeekOrigin.Begin);
-            bi.StreamSource = ms;
-            System.Windows.Controls.Image gridImage = new System.Windows.Controls.Image();
-            bi.EndInit();
-
-            return bi;
+            using (MemoryStream memory = new MemoryStream())
+            {
+                bmp.Save(memory, ImageFormat.Png);
+                memory.Position = 0;
+                BitmapImage bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memory;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+                return bitmapImage;
+            }
         }
 
 
