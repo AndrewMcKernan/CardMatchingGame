@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         MinHeight="700"
         MinWidth="300"
-        MaxWidth="600"
+        MaxWidth="500"
         MaxHeight="1200"
         Height="700"
         Width="450"
