@@ -51,10 +51,12 @@ namespace MatchingCardGame
         {
             string entry = numberOfPairsBox.Text.ToString();
             // if text is valid, get needed info and start the game. Otherwise, do not start the game.
-            if (isTextAllowed(entry))
+            // int.Parse will not fail since && has short circuit evaluation in C#, and isTextAllowed guarantees the entry is numeric
+            
+            if (isTextAllowed(entry) && int.TryParse(entry, out numberOfPairs) && isLegalNumber(numberOfPairs))
             {
                 errorMessage.Visibility = Visibility.Collapsed;
-                numberOfPairs = int.Parse(entry);
+                //numberOfPairs = int.Parse(entry);
             }
             else
             {
@@ -131,6 +133,12 @@ namespace MatchingCardGame
         private bool isTextAllowed(string text)
         {
             return isNumberRegex.IsMatch(text);
+        }
+
+        // check if the entered number is witihn the legal range
+        private bool isLegalNumber(int number)
+        {
+            return number > 1 && number < 53;
         }
 
         #endregion
