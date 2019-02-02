@@ -21,6 +21,15 @@
             <TextBox MinWidth="50" FontSize="20" KeyUp="numberOfPairsBox_KeyUp" Name="numberOfPairsBox" Background="Transparent" Foreground="Red" Text="6" CaretBrush="White"/>
             <TextBlock Name="errorMessage" Text="Please enter a valid number of pairs (2-52)" Foreground="Red" FontSize="18" Visibility="Collapsed"></TextBlock>
             <Button Content="Start" Background="Black" Foreground="GreenYellow" BorderBrush="Transparent" FontSize="20" Click="startButton_Click"></Button>
+            <FlowDocumentScrollViewer  Foreground="Red">
+                <FlowDocument>
+                    <Section>
+                        <Paragraph>
+                            The objective of the game is to flip over cards until you find an identical matching pair. For example, two Aces of Hearts would be a match, but an Ace of Spades and an Ace of Clubs would not match. Try to get them all with as few mistakes as possible!
+                        </Paragraph>
+                    </Section>
+                </FlowDocument>
+            </FlowDocumentScrollViewer>
         </StackPanel>
         <!--The panel shown on the game screen-->
         <StackPanel Name="GamePanel" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Stretch" Visibility="Collapsed">
